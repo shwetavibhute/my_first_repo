@@ -1,12 +1,1674 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My First Repo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyvera | Premium & Family Holiday Planner</title>
+    
+    <!-- Tailwind CSS for Responsive Premium Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter (UI) & Playfair Display (Serif Elegance) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons for modern UI aesthetics -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CRITICAL FIX: Synchronous Vue 3 Core Library (Loaded before app scripts) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom scrollbars for timeline widgets */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        [v-cloak] {
+            display: none !important;
+        }
+    </style>
 </head>
-<body>
-  <h1>Welcome to My First Repo</h1>
-  <p>This is a simple HTML file created inside the repository.</p>
+<body class="bg-[#030712] text-slate-100 min-h-screen selection:bg-cyan-500 selection:text-slate-950">
+
+    <div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
+        
+        <!-- Premium Floating Toast Alerts -->
+        <transition name="fade">
+            <div v-if="toastMessage" class="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-slate-950 to-slate-900 border border-cyan-500/40 text-slate-100 px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce">
+                <div class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></div>
+                <span class="text-xs font-semibold tracking-wide">{{ toastMessage }}</span>
+            </div>
+        </transition>
+
+        <!-- TOP NAVIGATION HEADER -->
+        <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-4">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                
+                <!-- Brand Identity -->
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/10">
+                        <i class="fa-solid fa-plane-departure text-slate-950 text-lg font-black"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                            <span>SKYVERA</span>
+                            <span class="text-[9px] font-black tracking-widest bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-md border border-cyan-500/20 uppercase">Agency Curated</span>
+                        </h1>
+                        <p class="text-[10px] text-slate-400 tracking-wider uppercase">Bespoke Micro & Epic Journeys</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex items-center gap-1.5 bg-slate-900/50 p-1 rounded-xl border border-slate-800/80">
+                    <button 
+                        @click="activeTab = 'catalog'" 
+                        :class="activeTab === 'catalog' ? 'bg-slate-800 text-cyan-400 border border-slate-700/60' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2"
+                    >
+                        <i class="fa-solid fa-compass"></i>
+                        <span>Explore Offers</span>
+                    </button>
+                    <button 
+                        @click="activeTab = 'planner'" 
+                        :class="activeTab === 'planner' ? 'bg-slate-800 text-cyan-400 border border-slate-700/60' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 relative"
+                    >
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Custom Customizer</span>
+                        <span v-if="selectedPackage" class="absolute -top-1.5 -right-1.5 h-2 w-2 rounded-full bg-emerald-400"></span>
+                    </button>
+                    <button 
+                        @click="activeTab = 'bookings'" 
+                        :class="activeTab === 'bookings' ? 'bg-slate-800 text-cyan-400 border border-slate-700/60' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 relative"
+                    >
+                        <i class="fa-solid fa-ticket"></i>
+                        <span>My Registered Trips</span>
+                        <span class="bg-cyan-500/20 text-cyan-300 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full" v-if="myBookings.length > 0">
+                            {{ myBookings.length }}
+                        </span>
+                    </button>
+                </nav>
+
+                <!-- Simulated Wallet Ledger & User Rank -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-2xl px-4 py-2 text-right">
+                        <span class="text-[9px] uppercase font-bold tracking-widest text-slate-500 block">Skyvera Balance</span>
+                        <span class="text-sm font-black text-emerald-400 font-mono">${{ userWalletBalance.toLocaleString() }}</span>
+                    </div>
+                    <div class="h-10 w-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400" title="Skyvera Club Elite">
+                        <i class="fa-solid fa-crown text-amber-400"></i>
+                    </div>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- MAIN APP WORKSPACE -->
+        <main class="flex-grow max-w-7xl mx-auto w-full px-4 lg:px-8 py-8">
+            
+            <!-- TAB 1: CURATED CATALOG, FLASH OFFERS & IMAGE ADS -->
+            <div v-if="activeTab === 'catalog'" class="space-y-8 animate-fadeIn">
+                
+                <!-- SKYVERA FEATURED HERO ADS ROTATOR -->
+                <div class="relative rounded-3xl overflow-hidden border border-cyan-500/20 shadow-2xl bg-slate-950">
+                    <!-- Carousel Slide Image Cover with smooth transition -->
+                    <div class="absolute inset-0 z-0">
+                        <img 
+                            :src="BILLBOARD_ADS[currentAdIndex].image" 
+                            :alt="BILLBOARD_ADS[currentAdIndex].title" 
+                            class="w-full h-full object-cover opacity-45 transition-all duration-1000 scale-105"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#030712] via-transparent to-transparent"></div>
+                    </div>
+
+                    <!-- Slide Content Overlay -->
+                    <div class="relative z-10 max-w-3xl px-8 py-14 lg:p-20 flex flex-col justify-between min-h-[460px]">
+                        <div class="space-y-4">
+                            <!-- Premium / Budget target audience badge -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-black tracking-widest text-slate-950 bg-cyan-400 px-3 py-1 rounded-full uppercase">
+                                    {{ BILLBOARD_ADS[currentAdIndex].badge }}
+                                </span>
+                                <span class="text-xs text-cyan-300 font-bold bg-slate-900/90 px-3 py-1 rounded-full border border-slate-800/80">
+                                    <i class="fa-solid fa-bullhorn mr-1.5"></i>Skyvera Exclusive Campaign
+                                </span>
+                            </div>
+
+                            <!-- Eye-catching taglines in playfair display font -->
+                            <h2 class="serif-title text-3xl lg:text-5xl font-black text-white leading-tight">
+                                {{ BILLBOARD_ADS[currentAdIndex].title }}
+                            </h2>
+                            <p class="text-slate-300 text-sm lg:text-base leading-relaxed max-w-xl">
+                                {{ BILLBOARD_ADS[currentAdIndex].tagline }}
+                            </p>
+                        </div>
+
+                        <!-- Call To Action linked directly to the package customizer -->
+                        <div class="mt-8 flex flex-col sm:flex-row items-center gap-4">
+                            <button 
+                                @click="loadAdCampaignTarget(BILLBOARD_ADS[currentAdIndex].packageId)"
+                                class="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider px-8 py-4 rounded-xl hover:scale-105 transition shadow-lg shadow-cyan-400/10 flex items-center justify-center gap-2"
+                            >
+                                <span>Plan This Dream Holiday</span>
+                                <i class="fa-solid fa-arrow-right-long"></i>
+                            </button>
+                            <span class="text-xs text-slate-400 hidden sm:inline">or cycle through other spotlights below</span>
+                        </div>
+                    </div>
+
+                    <!-- Carousel Controls & Indicators -->
+                    <div class="absolute bottom-6 right-8 z-20 flex items-center gap-3 bg-slate-950/80 backdrop-blur-md p-2 rounded-2xl border border-slate-800">
+                        <button 
+                            @click="prevAdSlide"
+                            class="h-8 w-8 rounded-xl bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition"
+                        >
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        
+                        <div class="flex gap-1.5">
+                            <button 
+                                v-for="(ad, index) in BILLBOARD_ADS" 
+                                :key="ad.id" 
+                                @click="setAdSlide(index)"
+                                :class="currentAdIndex === index ? 'bg-cyan-400 w-6' : 'bg-slate-700 w-2'"
+                                class="h-2 rounded-full transition-all duration-300"
+                            ></button>
+                        </div>
+
+                        <button 
+                            @click="nextAdSlide"
+                            class="h-8 w-8 rounded-xl bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition"
+                        >
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BRAND PLAYGROUND & TARGET AD FILTER -->
+                <div class="bg-gradient-to-r from-slate-950 via-[#0a1420] to-slate-950 border border-cyan-500/15 p-6 rounded-3xl">
+                    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                        <div class="space-y-1 max-w-lg">
+                            <span class="text-[10px] uppercase font-black text-emerald-400 tracking-widest block">Interactive Marketing Hub</span>
+                            <h3 class="text-lg font-bold text-white">Find Your Ideal Vibe With Our Curated Campaign Filters</h3>
+                            <p class="text-xs text-slate-400">Toggle target demographics dynamically to quickly filter premium properties, family value packages, and matching regional deals.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-850">
+                            <button 
+                                @click="setCampaignVibeFilter('all')" 
+                                :class="selectedCampaignVibe === 'all' ? 'bg-cyan-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'"
+                                class="text-xs px-4 py-2.5 rounded-xl font-semibold transition flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-globe"></i>
+                                <span>Show All Campaigns</span>
+                            </button>
+                            <button 
+                                @click="setCampaignVibeFilter('premium')" 
+                                :class="selectedCampaignVibe === 'premium' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'"
+                                class="text-xs px-4 py-2.5 rounded-xl font-semibold transition flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-crown"></i>
+                                <span>Elite & Luxury Ads</span>
+                            </button>
+                            <button 
+                                @click="setCampaignVibeFilter('family')" 
+                                :class="selectedCampaignVibe === 'family' ? 'bg-emerald-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'"
+                                class="text-xs px-4 py-2.5 rounded-xl font-semibold transition flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-people-roof"></i>
+                                <span>Family Value & Saver Ads</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Flash Offers Hub banner -->
+                <div class="bg-gradient-to-r from-emerald-950/40 via-slate-900/60 to-[#022c22]/20 border border-emerald-900/40 p-6 rounded-3xl">
+                    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                                <span class="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                🎟️ Skyvera Active Promotional Deals
+                            </h3>
+                            <p class="text-xs text-slate-300">Click to instantly claim and copy any active promo code below for your checkout:</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <div 
+                                v-for="promo in ACTIVE_PROMOS" 
+                                :key="promo.code"
+                                @click="claimOfferCode(promo)"
+                                class="bg-slate-950/80 border border-emerald-800/50 hover:border-emerald-500 hover:bg-slate-900 rounded-2xl p-3 cursor-pointer transition flex items-center gap-3"
+                            >
+                                <div class="bg-emerald-500/10 text-emerald-400 text-xs font-mono font-bold px-2 py-1 rounded-lg border border-emerald-500/25">
+                                    {{ promo.code }}
+                                </div>
+                                <div class="text-left">
+                                    <h4 class="text-[11px] font-extrabold text-slate-200">{{ promo.title }}</h4>
+                                    <p class="text-[9px] text-slate-400">{{ promo.desc }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Filters Drawer -->
+                <div class="bg-slate-950/80 border border-slate-900 p-6 rounded-3xl space-y-6">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-slate-900">
+                        <div>
+                            <h3 class="serif-title text-xl font-bold text-slate-100">Tailor Your Dream Holiday</h3>
+                            <p class="text-xs text-slate-400">Scale the duration and parameters to generate instant live price quotes.</p>
+                        </div>
+                        <span class="text-[11px] font-mono font-bold text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
+                            Showing {{ filteredPackages.length }} of {{ packages.length }} Base Blueprints
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Filter duration -->
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Duration Tier</label>
+                            <div class="grid grid-cols-5 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                                <button 
+                                    v-for="(label, key) in durationFilters" 
+                                    :key="key"
+                                    @click="selectedDurationFilter = key"
+                                    :class="selectedDurationFilter === key ? 'bg-cyan-500 text-slate-950 font-extrabold shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                                    class="text-[9px] py-1.5 rounded-lg capitalize transition font-bold"
+                                >
+                                    {{ key }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Class & Budget Filter -->
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Pricing Class & Vibe</label>
+                            <select 
+                                v-model="selectedTierFilter"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 transition"
+                            >
+                                <option value="all">💎 All Pricing Budgets</option>
+                                <option value="value">👨‍👩‍👧‍👦 Family Value / Middle-Class</option>
+                                <option value="premium">✨ Elite Premium / Luxury</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Theme/Vibe -->
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Holiday Vibe Profile</label>
+                            <select 
+                                v-model="selectedVibeFilter"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 transition"
+                            >
+                                <option value="all">🌍 All Themes / Experiences</option>
+                                <option value="adventure">🧗 Active Adventure</option>
+                                <option value="relaxing">🏖️ Relaxing & Wellness</option>
+                                <option value="cultural">🏛️ Cultural & Historical</option>
+                                <option value="culinary">🍽️ Gastronomical / Culinary</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort option -->
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Ordering</label>
+                            <select 
+                                v-model="sortOrder"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 transition"
+                            >
+                                <option value="popular">🔥 Most Popular First</option>
+                                <option value="price-low">💸 Price: Low to High</option>
+                                <option value="price-high">📈 Price: High to Low</option>
+                                <option value="duration-desc">⏳ Duration: Longest First</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trip Packages Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div 
+                        v-for="pkg in filteredPackages" 
+                        :key="pkg.id"
+                        class="bg-slate-950 border border-slate-900/80 rounded-3xl overflow-hidden hover:border-cyan-500/40 hover:scale-[1.01] transition-all duration-300 flex flex-col justify-between group shadow-xl relative"
+                    >
+                        <!-- Highlight discount sticker -->
+                        <div class="absolute top-4 left-4 z-10 bg-cyan-500 text-slate-950 font-black text-[10px] uppercase px-3 py-1 rounded-full shadow-lg">
+                            Save {{ pkg.dealDiscount }}%
+                        </div>
+
+                        <!-- Class Tier Badge -->
+                        <div 
+                            :class="pkg.tier === 'value' ? 'bg-emerald-500/90 text-white' : 'bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950'"
+                            class="absolute top-14 left-4 z-10 font-black text-[9px] uppercase px-2.5 py-0.5 rounded-md shadow-md"
+                        >
+                            <span v-if="pkg.tier === 'value'"><i class="fa-solid fa-people-roof mr-1"></i>Family Value</span>
+                            <span v-else><i class="fa-solid fa-crown mr-1"></i>Elite Premium</span>
+                        </div>
+
+                        <!-- Duration Sticker -->
+                        <div class="absolute top-4 right-4 z-10 bg-slate-950/80 backdrop-blur-md text-slate-200 font-bold text-[10px] px-2.5 py-1 rounded-full border border-slate-800">
+                            <i class="fa-regular fa-clock mr-1 text-cyan-400"></i>{{ pkg.durationDays }} {{ pkg.durationDays === 1 ? 'Day' : 'Days' }}
+                        </div>
+
+                        <!-- Destination Photo with error fallback -->
+                        <div class="relative h-48 overflow-hidden bg-slate-900">
+                            <img 
+                                :src="pkg.bgImage" 
+                                :alt="pkg.title"
+                                @error="pkg.bgImage = 'https://placehold.co/600x400/020617/0ea5e9?text=' + encodeURIComponent(pkg.title)"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-widest block">{{ pkg.region }}, {{ pkg.country }}</span>
+                                <h4 class="text-base font-extrabold text-white leading-tight mt-1">{{ pkg.title }}</h4>
+                            </div>
+                        </div>
+
+                        <!-- Core Package Specs -->
+                        <div class="p-6 space-y-4">
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                {{ pkg.description }} Pre-optimized by our professional regional curation advisors.
+                            </p>
+
+                            <!-- Custom Tagline for Packages -->
+                            <div class="italic text-[11px] text-cyan-400/85 border-l-2 border-cyan-500/40 pl-3">
+                                "{{ pkg.adTagline }}"
+                            </div>
+
+                            <div class="bg-slate-900/40 p-3 rounded-2xl border border-slate-900/60 grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <span class="text-slate-500 text-[9px] block uppercase font-bold">Resort Tier</span>
+                                    <span class="text-slate-300 font-semibold text-[10px]">
+                                        {{ pkg.tier === 'value' ? '🏨 Comfortable Family Lodge' : '💎 Premium Luxury Stay' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 text-[9px] block uppercase font-bold">Transit Coverage</span>
+                                    <span class="text-slate-300 font-semibold text-[10px]">✈️ Skyvera Pass</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 text-[9px] block uppercase font-bold">Day Excursion</span>
+                                    <span class="text-slate-300 font-semibold text-[10px] truncate block">🧭 Guided Tours</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 text-[9px] block uppercase font-bold">Gastronomy</span>
+                                    <span class="text-slate-300 font-semibold text-[10px]">
+                                        {{ pkg.tier === 'value' ? '🍽️ Meals Included' : '🍷 Fine Dining' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Price Matrix -->
+                            <div class="flex items-end justify-between pt-2">
+                                <div>
+                                    <span class="text-slate-500 text-[9px] block uppercase font-bold">Base Package Quote</span>
+                                    <div class="flex items-baseline gap-1.5">
+                                        <span class="text-xl font-black text-cyan-400 font-mono">${{ calculatePromoCost(pkg) }}</span>
+                                        <span class="text-xs text-slate-500 font-semibold line-through font-mono">${{ pkg.baseRegularCost }}</span>
+                                        <span class="text-[9px] text-slate-400 font-medium">/traveller</span>
+                                    </div>
+                                </div>
+                                
+                                <button 
+                                    @click="selectPackageForPlanning(pkg)"
+                                    class="bg-gradient-to-r from-cyan-600 to-cyan-500 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl hover:from-cyan-500 hover:to-cyan-400 transition shadow-lg shadow-cyan-500/10 flex items-center gap-1.5"
+                                >
+                                    <span>Plan & Scale</span>
+                                    <i class="fa-solid fa-angle-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TAB 2: INTERACTIVE CUSTOMIZER & ITINERARY EDITOR -->
+            <div v-if="activeTab === 'planner'" class="space-y-6 animate-fadeIn">
+                
+                <!-- If No Package is loaded yet -->
+                <div v-if="!selectedPackage" class="bg-slate-950 border border-slate-900 rounded-3xl p-12 text-center max-w-lg mx-auto space-y-6">
+                    <div class="h-16 w-16 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="serif-title text-xl font-bold text-white">No Base Blueprint Loaded</h3>
+                        <p class="text-xs text-slate-400 max-w-md mx-auto">
+                            To customize, scale, and add specific activities for 1 to 30 days, please select one of our curated vacation templates or visual advertisements in the main catalog first.
+                        </p>
+                    </div>
+                    <button 
+                        @click="activeTab = 'catalog'"
+                        class="bg-cyan-500 text-slate-950 font-bold text-xs px-6 py-3 rounded-xl hover:bg-cyan-400 transition"
+                    >
+                        Browse Trip Blueprints
+                    </button>
+                </div>
+
+                <!-- Loaded Dynamic Customizer App -->
+                <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Left: Control Deck & Day Timeline Slider -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Mini Package Info Banner -->
+                        <div class="bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-850 p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div>
+                                <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-widest block">{{ selectedPackage.region }}, {{ selectedPackage.country }}</span>
+                                <h3 class="serif-title text-xl font-bold text-white leading-tight mt-1">{{ selectedPackage.title }}</h3>
+                                <p class="text-xs text-slate-400 mt-1">Configure parameters below to adjust pricing live.</p>
+                            </div>
+                            <button 
+                                @click="resetToCatalog"
+                                class="text-xs text-slate-400 hover:text-slate-100 bg-slate-900 hover:bg-slate-850 px-4 py-2 rounded-xl transition border border-slate-800"
+                            >
+                                <i class="fa-solid fa-arrows-rotate mr-1.5 text-cyan-400"></i>Switch Base Package
+                            </button>
+                        </div>
+
+                        <!-- 1-to-30 Day Timeline Slider Controls -->
+                        <div class="bg-slate-950 border border-slate-900 rounded-3xl p-6 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-200">Set Custom Trip Duration</h4>
+                                    <p class="text-[11px] text-slate-400">Scale anywhere from a 1-day escape to a full month (30 days)</p>
+                                </div>
+                                <div class="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-mono font-bold px-3 py-1 rounded-lg">
+                                    {{ editableDuration }} {{ editableDuration === 1 ? 'Day Stopover' : 'Days Journey' }}
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs font-bold text-slate-500">1 Day</span>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="30"
+                                    v-model.number="editableDuration"
+                                    @input="handleDurationChange"
+                                    class="w-full h-2 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                                />
+                                <span class="text-xs font-bold text-slate-500">30 Days</span>
+                            </div>
+
+                            <!-- Traveler & Hotel Tier Adjusters -->
+                            <div class="grid grid-cols-2 gap-4 pt-3 border-t border-slate-900">
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Travelers Count</label>
+                                    <input 
+                                        type="number" 
+                                        min="1" 
+                                        max="10"
+                                        v-model.number="travelerCount"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 text-center font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Accommodation Tier</label>
+                                    <select 
+                                        v-model="hotelTier"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                                    >
+                                        <option value="budget">🏠 Family Co-Living / Saver (-$60/day)</option>
+                                        <option value="standard">🏨 Standard Comfort (+$0)</option>
+                                        <option value="luxury">💎 Grand Luxury Suite (+$150/day)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Day-by-Day Itinerary Builder -->
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="serif-title text-lg font-bold text-slate-100">Dynamic Daily Itinerary Timeline</h3>
+                                    <p class="text-xs text-slate-400">Add, remove, or edit specific custom events on any day</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button @click="toggleAllTimelineDays(true)" class="text-[10px] uppercase font-bold text-cyan-400 hover:underline">Expand All</button>
+                                    <span class="text-slate-600">|</span>
+                                    <button @click="toggleAllTimelineDays(false)" class="text-[10px] uppercase font-bold text-slate-400 hover:underline">Collapse All</button>
+                                </div>
+                            </div>
+
+                            <!-- Individual Day Loops -->
+                            <div class="space-y-4">
+                                <div 
+                                    v-for="(day, dIndex) in itineraryDays" 
+                                    :key="dIndex"
+                                    class="bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden transition-all duration-200"
+                                >
+                                    <!-- Day Header Toggle -->
+                                    <div 
+                                        @click="day.isExpanded = !day.isExpanded"
+                                        class="p-4 bg-slate-900/30 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 transition"
+                                    >
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center border border-slate-800 text-xs font-mono font-bold text-slate-300">
+                                                D{{ dIndex + 1 }}
+                                            </div>
+                                            <div>
+                                                <h4 class="text-xs font-extrabold text-slate-100">
+                                                    {{ day.highlight }}
+                                                </h4>
+                                                <p class="text-[10px] text-slate-400">
+                                                    {{ day.activities.length }} Scheduled Milestones
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[11px] font-mono font-bold text-cyan-400 bg-cyan-500/5 px-2.5 py-1 rounded-md border border-cyan-500/10">
+                                                Day Budget: ${{ calculateDayCost(day).toLocaleString() }}
+                                            </span>
+                                            <i 
+                                                class="fa-solid" 
+                                                :class="day.isExpanded ? 'fa-angle-up text-cyan-400' : 'fa-angle-down text-slate-500'"
+                                            ></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Expanded Day Content -->
+                                    <div v-show="day.isExpanded" class="p-4 border-t border-slate-900/80 space-y-4 bg-slate-950/40">
+                                        
+                                        <!-- Activities Timeline Grid -->
+                                        <div class="space-y-2">
+                                            <div 
+                                                v-for="(act, aIndex) in day.activities" 
+                                                :key="aIndex"
+                                                class="flex items-center justify-between gap-4 bg-slate-900/50 p-3 rounded-xl border border-slate-900"
+                                            >
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <span class="h-7 w-7 rounded-lg bg-slate-950 flex items-center justify-center text-[10px] text-slate-400 border border-slate-800">
+                                                        <i :class="getActivityIcon(act.category)"></i>
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <span class="text-[9px] uppercase font-bold tracking-wider text-slate-500 font-mono block">{{ act.time }}</span>
+                                                        <span class="text-xs text-slate-200 font-semibold truncate block">{{ act.title }}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex items-center gap-3">
+                                                    <span class="text-xs font-mono font-bold text-slate-400">${{ act.cost }} <span class="text-[9px] text-slate-500">pp</span></span>
+                                                    <button 
+                                                        @click="deleteActivity(dIndex, aIndex)"
+                                                        class="text-slate-500 hover:text-red-400 transition p-1"
+                                                        title="Remove from Itinerary"
+                                                    >
+                                                        <i class="fa-regular fa-trash-can text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Add Activity Sub-Form inside Day widget -->
+                                        <div class="bg-slate-900/30 p-3 rounded-xl border border-dashed border-slate-800 space-y-3">
+                                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block"><i class="fa-solid fa-plus-circle mr-1 text-cyan-400"></i>Add Custom Milestone</span>
+                                            
+                                            <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                                <input 
+                                                    type="text" 
+                                                    v-model="day.newActivityTitle"
+                                                    placeholder="Activity name (e.g. Scuba diving, Museum visit)"
+                                                    class="md:col-span-2 bg-slate-950 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500"
+                                                />
+                                                <select 
+                                                    v-model="day.newActivityCategory"
+                                                    class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500"
+                                                >
+                                                    <option value="adventure">🧗 Adventure</option>
+                                                    <option value="meals">🍽️ Gastronomy / Meals</option>
+                                                    <option value="transit">✈️ Transit / Flights</option>
+                                                    <option value="wellness">💆 Wellness / Spa</option>
+                                                </select>
+                                                <div class="flex gap-2">
+                                                    <input 
+                                                        type="number" 
+                                                        v-model.number="day.newActivityCost"
+                                                        placeholder="Cost pp"
+                                                        class="w-1/2 bg-slate-950 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500 text-center font-bold"
+                                                    />
+                                                    <button 
+                                                        @click="addCustomActivityToDay(dIndex)"
+                                                        class="w-1/2 bg-cyan-500 text-slate-950 font-bold text-xs rounded-lg hover:bg-cyan-400 transition"
+                                                    >
+                                                        Add
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right: Dynamic Budget Ledger & Checklist -->
+                    <div class="space-y-6">
+                        
+                        <!-- Price Breakdown Drawer with Discounts Applied -->
+                        <div class="bg-slate-950 border border-slate-900 rounded-3xl p-6 shadow-xl space-y-4">
+                            <h4 class="serif-title text-lg font-bold text-slate-100 flex items-center justify-between">
+                                <span>Skyvera Savings Card</span>
+                                <i class="fa-solid fa-receipt text-cyan-400"></i>
+                            </h4>
+
+                            <div class="bg-slate-900/30 p-4 rounded-2xl space-y-3 border border-slate-900 text-xs">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Base Cost ({{ editableDuration }} days × {{ travelerCount }} travelers):</span>
+                                    <span class="font-bold text-slate-300 font-mono">${{ baseUnformattedCost.toLocaleString() }}</span>
+                                </div>
+                                <div v-if="hotelTier === 'luxury'" class="flex justify-between text-cyan-400">
+                                    <span>Hotel Luxury Suite Upgrade:</span>
+                                    <span class="font-bold font-mono">+${{ (150 * editableDuration * travelerCount).toLocaleString() }}</span>
+                                </div>
+                                <div v-if="hotelTier === 'budget'" class="flex justify-between text-emerald-400">
+                                    <span>Family Budget Saver Discount:</span>
+                                    <span class="font-bold font-mono">-${{ (60 * editableDuration * travelerCount).toLocaleString() }}</span>
+                                </div>
+                                <div class="flex justify-between text-cyan-400">
+                                    <span>Active Blueprint Deal Discount ({{ selectedPackage.dealDiscount }}%):</span>
+                                    <span class="font-bold font-mono">-${{ packageDiscountAmt.toLocaleString() }}</span>
+                                </div>
+                                <div v-if="appliedCouponCode" class="flex justify-between text-emerald-400">
+                                    <span>Claimed Promo Coupon Discount:</span>
+                                    <span class="font-bold font-mono">-${{ couponDiscountAmt.toLocaleString() }}</span>
+                                </div>
+                                
+                                <div class="border-t border-slate-800 pt-3 flex justify-between items-baseline">
+                                    <span class="text-sm font-bold text-slate-200">Total Estimate:</span>
+                                    <span class="text-2xl font-black text-white font-mono">${{ totalCalculatedEstimate.toLocaleString() }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Promocode Entry -->
+                            <div class="space-y-2">
+                                <label class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider">Coupon Code Applied</label>
+                                <div class="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        v-model="appliedCouponCode"
+                                        placeholder="Enter promo (e.g. SKYVERA20)"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 uppercase font-mono tracking-wider focus:outline-none focus:border-cyan-500"
+                                    />
+                                    <button 
+                                        v-if="appliedCouponCode"
+                                        @click="appliedCouponCode = ''"
+                                        class="bg-slate-800 text-xs px-3 rounded-xl hover:bg-slate-700 transition"
+                                        title="Clear applied promo"
+                                    >
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-[9px] text-slate-400 leading-tight">
+                                    Try using <strong class="text-emerald-400 font-mono">FAMILYPACK</strong> if booking for 3+ members, or <strong class="text-emerald-400 font-mono">SKYVERA20</strong> for classic trips!
+                                </p>
+                            </div>
+
+                            <!-- Purchase Booking Button -->
+                            <button 
+                                @click="bookHolidayPlan"
+                                class="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-slate-950 font-black text-sm py-4 rounded-2xl hover:from-emerald-400 hover:to-emerald-300 transition shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2"
+                            >
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                <span>Register & Book Holiday</span>
+                            </button>
+                        </div>
+
+                        <!-- Smart Dynamic Suitcase Packing Checklist -->
+                        <div class="bg-slate-950 border border-slate-900 rounded-3xl p-6 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-200">Skyvera Intelligent Packing List</h4>
+                                    <p class="text-[10px] text-slate-400">Scaled automatically for {{ editableDuration }} days</p>
+                                </div>
+                                <i class="fa-solid fa-suitcase-rolling text-cyan-400"></i>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label 
+                                    v-for="(item, i) in dynamicPackingList" 
+                                    :key="i"
+                                    class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/30 border border-slate-900/80 hover:bg-slate-900 cursor-pointer transition text-xs"
+                                >
+                                    <input 
+                                        type="checkbox" 
+                                        v-model="item.checked"
+                                        class="rounded text-cyan-500 focus:ring-cyan-500 accent-cyan-500 h-4 w-4 bg-slate-950 border-slate-800"
+                                    />
+                                    <span :class="item.checked ? 'line-through text-slate-500' : 'text-slate-300'" class="flex-grow font-medium">
+                                        {{ item.name }}
+                                    </span>
+                                    <span class="bg-slate-900 px-2 py-0.5 rounded text-[10px] font-mono font-bold text-slate-400">
+                                        Qty: {{ item.qty }}
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- TAB 3: REGISTERED TRAVEL BOOKINGS -->
+            <div v-if="activeTab === 'bookings'" class="space-y-6 animate-fadeIn">
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="serif-title text-2xl font-bold text-white">Your Skyvera Travel Board</h2>
+                        <p class="text-xs text-slate-400">Official digital vouchers, route highlights, and cancelation refunds.</p>
+                    </div>
+                    <span class="text-xs font-mono font-semibold text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                        {{ myBookings.length }} Travel Vouchers
+                    </span>
+                </div>
+
+                <!-- Empty state bookings -->
+                <div v-if="myBookings.length === 0" class="bg-slate-950 border border-slate-900 rounded-3xl p-12 text-center max-w-lg mx-auto space-y-4">
+                    <div class="h-16 w-16 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-500 text-xl">
+                        <i class="fa-solid fa-face-meh"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="serif-title text-lg font-bold text-white">No Registered Holidays Found</h3>
+                        <p class="text-xs text-slate-400">You do not have any active upcoming trips at this time.</p>
+                    </div>
+                </div>
+
+                <!-- Booked Trips Loop -->
+                <div v-else class="grid grid-cols-1 gap-6">
+                    <div 
+                        v-for="booking in myBookings" 
+                        :key="booking.id"
+                        class="bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-850 rounded-3xl p-6 lg:p-8 relative overflow-hidden flex flex-col md:flex-row justify-between gap-6"
+                    >
+                        <div class="absolute inset-0 bg-radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops)) from-cyan-500/5 via-transparent to-transparent"></div>
+                        
+                        <div class="space-y-4 relative z-10 max-w-2xl">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-cyan-500/10 text-cyan-400 text-xs font-mono font-bold px-3 py-1 rounded-full border border-cyan-500/20">
+                                    Ref: {{ booking.id }}
+                                </span>
+                                <span class="text-xs text-slate-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-calendar-alt text-slate-500"></i> Scheduled Departures: {{ booking.startDate }}
+                                </span>
+                            </div>
+
+                            <div class="space-y-1">
+                                <h3 class="serif-title text-xl font-bold text-white">{{ booking.packageTitle }}</h3>
+                                <p class="text-xs text-slate-300 font-medium">
+                                    🗺️ {{ booking.region }}, {{ booking.country }} &bull; {{ booking.duration }} Days &bull; {{ booking.travelers }} Travelers
+                                </p>
+                            </div>
+
+                            <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-900/60 text-xs space-y-2">
+                                <div class="flex gap-2 items-center text-[10px] text-cyan-400 font-extrabold uppercase tracking-wide">
+                                    <i class="fa-solid fa-route"></i>
+                                    <span>Interactive Live Summary Highlights</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 leading-relaxed font-mono">
+                                    {{ booking.daySummaryExcerpt }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Booking Status and refund controls -->
+                        <div class="flex flex-col justify-between items-end gap-4 min-w-[200px] relative z-10 text-right">
+                            <div class="space-y-1">
+                                <span class="text-[9px] uppercase font-bold tracking-wider text-slate-500 block">Total Sandbox Cost</span>
+                                <span class="text-2xl font-black text-emerald-400 font-mono">${{ booking.cost.toLocaleString() }}</span>
+                                <span class="text-[9px] text-emerald-500 block uppercase font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Verified Paid</span>
+                            </div>
+
+                            <div class="flex gap-2 w-full md:w-auto">
+                                <button 
+                                    @click="copyBookingVoucher(booking)"
+                                    class="bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-1.5"
+                                    title="Copy itinerary vouchers"
+                                >
+                                    <i class="fa-solid fa-copy"></i>
+                                    <span>Copy Summary</span>
+                                </button>
+                                <button 
+                                    @click="refundBookingPlan(booking)"
+                                    class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 text-xs px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-1.5"
+                                >
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <span>Refund</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- FOOTER BAR -->
+        <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p>&copy; 2026 Skyvera Premium Travels Inc. All rights reserved.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-slate-300">Terms of Use</a>
+                    <a href="#" class="hover:text-slate-300">Privacy Shield</a>
+                    <a href="#" class="hover:text-slate-300">Agent Command Center</a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- CORE VUE 3 APPLICATION SCRIPT -->
+    <script>
+        const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
+
+        // Large database of Curated Packages (Trip blueprints from 1 day to 30 days)
+        const PACKAGES_DATABASE = [
+            {
+                id: 'PKG-TYO',
+                title: 'Neon Tokyo & Mt. Fuji Discovery',
+                region: 'Tokyo & Hakone',
+                country: 'Japan',
+                bgImage: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 7, // default pre-planned length
+                dealDiscount: 15, // Percent off
+                baseRegularCost: 1450, // Per traveller
+                category: 'cultural',
+                description: 'Explore the electric avenues of Shinjuku, old temples in Asakusa, and experience a private lake-view tea ceremony with Mount Fuji on the horizon.',
+                vibe: 'cultural',
+                tier: 'premium',
+                adTagline: 'Unrivaled Luxury. Uncompromised Privacy. This is Skyvera Gold.'
+            },
+            {
+                id: 'PKG-ORL',
+                title: 'Orlando Magic Theme Park Pass',
+                region: 'Florida Theme Hub',
+                country: 'United States',
+                bgImage: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 5,
+                dealDiscount: 20,
+                baseRegularCost: 590, // Affordable base
+                category: 'adventure',
+                description: 'The ultimate dream getaway for families. Includes dynamic multi-park access, kid-friendly dining hubs, and spacious cozy apartment resort wings.',
+                vibe: 'adventure',
+                tier: 'value', // Family / Middle Class friendly
+                adTagline: 'Big Family Adventures. Small Family Budgets.'
+            },
+            {
+                id: 'PKG-AMA',
+                title: 'Amalfi Coast Coastline & Sorrento Sunsets',
+                region: 'Sorrento Peninsula',
+                country: 'Italy',
+                bgImage: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 5,
+                dealDiscount: 20,
+                baseRegularCost: 1950,
+                category: 'relaxing',
+                description: 'A romantic Mediterranean adventure showcasing dramatic sea cliffs, elegant coastal villas, chartered boat excursions, and private artisan pasta tastings.',
+                vibe: 'relaxing',
+                tier: 'premium',
+                adTagline: 'Sip Sorrento Limoncello with exclusive Mediterranean horizons.'
+            },
+            {
+                id: 'PKG-SMY',
+                title: 'Smoky Mountains Cabin Cozy Retreat',
+                region: 'Tennessee Wilderness',
+                country: 'United States',
+                bgImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 6,
+                dealDiscount: 25,
+                baseRegularCost: 420,
+                category: 'adventure',
+                description: 'Reconnect with nature in a beautiful log cabin with game rooms. Enjoy stream fishing, simple nature hikes, and cozy evening marshmallow campfires.',
+                vibe: 'adventure',
+                tier: 'value',
+                adTagline: 'Warm mountain campfires, affordable forest hikes.'
+            },
+            {
+                id: 'PKG-REY',
+                title: 'Icelandic Fire & Ice Route Explorer',
+                region: 'Reykjavik & Golden Circle',
+                country: 'Iceland',
+                bgImage: 'https://images.unsplash.com/photo-1504829857797-ddff28127792?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 4,
+                dealDiscount: 10,
+                baseRegularCost: 1200,
+                category: 'adventure',
+                description: 'Discover massive grinding glaciers, geothermal warm springs, thundering falls, and the aurora skies with custom 4x4 rugged vehicles.',
+                vibe: 'adventure',
+                tier: 'premium',
+                adTagline: 'Witness the northern lights from premium geothermal glass domes.'
+            },
+            {
+                id: 'PKG-CPT',
+                title: 'Grand Serengeti Safari & Coast Wilderness',
+                region: 'Serengeti Reserves',
+                country: 'Tanzania',
+                bgImage: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 10,
+                dealDiscount: 25,
+                baseRegularCost: 3200,
+                category: 'adventure',
+                description: 'Witness the iconic wildlife of the Serengeti with open-top luxury safari guides before unwinding on white sandy coastal retreats.',
+                vibe: 'adventure',
+                tier: 'premium',
+                adTagline: 'Unmatched raw nature, private luxury game reserve lodging.'
+            },
+            {
+                id: 'PKG-PAT',
+                title: 'Patagonia Glacier Trail Trekking',
+                region: 'Andes Foothills',
+                country: 'Argentina',
+                bgImage: 'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 14,
+                dealDiscount: 30,
+                baseRegularCost: 4100,
+                category: 'adventure',
+                description: 'Deep wilderness immersion across giant blue ice formations, turquoise lagoons, and luxury wooden log chalets at the edge of the hemisphere.',
+                vibe: 'adventure',
+                tier: 'premium',
+                adTagline: 'Epic glacial hikes with cozy premium wood fires.'
+            },
+            {
+                id: 'PKG-PAR',
+                title: 'Parisian Art, Heritage & Pastry Escapes',
+                region: 'Paris',
+                country: 'France',
+                bgImage: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 3,
+                dealDiscount: 12,
+                baseRegularCost: 890,
+                category: 'cultural',
+                description: 'Bespoke museum guides, private luxury croissant pastry masterclasses, and champagne dinner cruises down the river Seine.',
+                vibe: 'culinary',
+                tier: 'premium',
+                adTagline: 'Art, history, and pastries curated for refined palettes.'
+            },
+            {
+                id: 'PKG-BAL',
+                title: 'Ubud Wellness & Sanctuary Spiritual Retreat',
+                region: 'Bali',
+                country: 'Indonesia',
+                bgImage: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 12,
+                dealDiscount: 18,
+                baseRegularCost: 1800,
+                category: 'wellness',
+                description: 'Surround yourself with sacred water temple rites, intensive daily yoga studios, traditional herbal therapies, and pristine rice terrace views.',
+                vibe: 'wellness',
+                tier: 'premium',
+                adTagline: 'Restore your soul. Sacred temples, holistic meditation.'
+            },
+            {
+                id: 'PKG-SILK',
+                title: 'Grand Month-Long Silk Road Expedition',
+                region: 'Central Asia Heritage',
+                country: 'Uzbekistan',
+                bgImage: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 30, // 30 Day grand expedition
+                dealDiscount: 35, // Premium massive month-long offer
+                baseRegularCost: 6800,
+                category: 'cultural',
+                description: 'An ultimate month-long exploration of ancient caravan cities, monumental turquoise dome architecture, oasis treks, and nomadic desert stays.',
+                vibe: 'cultural',
+                tier: 'premium',
+                adTagline: 'A month of caravan history, luxury desert tents.'
+            },
+            {
+                id: 'PKG-NYC',
+                title: 'New York City Weekend Broadway Escape',
+                region: 'Manhattan',
+                country: 'United States',
+                bgImage: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 2,
+                dealDiscount: 15,
+                baseRegularCost: 650,
+                category: 'cultural',
+                description: 'Premium tickets to broadway showcases, high-floor skyscraper viewing platforms, and personalized central park horse carriage rides.',
+                vibe: 'cultural',
+                tier: 'premium',
+                adTagline: 'Broadway curtains, VIP central park skyline vistas.'
+            },
+            {
+                id: 'PKG-HAW',
+                title: '1-Day Maui Coastal Surf & Luau Escape',
+                region: 'Hawaii Beaches',
+                country: 'United States',
+                bgImage: 'https://images.unsplash.com/photo-1542082855-e13e0b4114fd?auto=format&fit=crop&w=1000&q=80',
+                durationDays: 1, // Micro-escape 1 day
+                dealDiscount: 20,
+                baseRegularCost: 350,
+                category: 'relaxing',
+                description: 'A packed single-day premium escape offering high-performance helicopter scenic flyovers, surf lessons, and authentic coastal dinner feasts.',
+                vibe: 'relaxing',
+                tier: 'premium',
+                adTagline: '24 hours is all it takes to escape standard routine.'
+            }
+        ];
+
+        // Premium & Family friendly target campaigns with beautiful taglines and Unsplash backdrops
+        const ADVERTISEMENTS_DATABASE = [
+            {
+                id: 'AD-GOLD',
+                title: 'Unrivaled Luxury. Uncompromised Privacy.',
+                tagline: 'Experience the Skyvera Gold tier with five-star private villa upgrades, chartered helicopter arrivals, and bespoke regional guides.',
+                badge: 'ELITE PREMIUM',
+                image: 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&w=1200&q=80',
+                packageId: 'PKG-TYO',
+                campaign: 'premium'
+            },
+            {
+                id: 'AD-FAMILY',
+                title: 'Exceptional Family Getaways. Thoughtful Value Pricing.',
+                tagline: 'We believe premium memories do not require premium debt. Get up to 25% off family-friendly retreats with comfortable lodging and kid-friendly tours.',
+                badge: 'FAMILY VALUE',
+                image: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=1200&q=80',
+                packageId: 'PKG-ORL',
+                campaign: 'family'
+            },
+            {
+                id: 'AD-MICRO',
+                title: 'Because 24 Hours Can Reset Your Soul.',
+                tagline: 'Too busy for a month away? Discover our high-speed, 1-to-3 day luxury micro-escapes tailored to fit seamlessly into any busy family schedule.',
+                badge: 'MICRO-ESCAPE',
+                image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+                packageId: 'PKG-HAW',
+                campaign: 'family'
+            },
+            {
+                id: 'AD-SAFARI',
+                title: 'Untamed Wildlands. Bespoke Sanctuary.',
+                tagline: 'Venture into deep Tanzania Serengeti game reserves during the day, and retreat to private champagne pools at night.',
+                badge: 'ELITE PREMIUM',
+                image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80',
+                packageId: 'PKG-CPT',
+                campaign: 'premium'
+            }
+        ];
+
+        const SUGGESTED_DAILY_MILESTONES = {
+            adventure: [
+                { title: "Peak Helicopter Ascent Flight", category: "transit", time: "09:30 AM", cost: 180 },
+                { title: "Unmarked Volcano Caves Wilderness Explorer", category: "adventure", time: "01:00 PM", cost: 120 },
+                { title: "Chartered Yacht Sunset Coastal Route", category: "transit", time: "05:30 PM", cost: 190 },
+                { title: "Local Off-Road Quad Biking Safari", category: "adventure", time: "11:00 AM", cost: 85 },
+                { title: "Summit Hiking Path guided by Mountaineer", category: "adventure", time: "07:00 AM", cost: 60 }
+            ],
+            relaxing: [
+                { title: "Mineral Warm Springs Session", category: "wellness", time: "10:00 AM", cost: 110 },
+                { title: "Organic Botanical Massage Treatment", category: "wellness", time: "03:00 PM", cost: 140 },
+                { title: "Panoramic Balcony Specialty Tea Tasting", category: "meals", time: "05:00 PM", cost: 45 },
+                { title: "Quiet Sanctuary Guided Meditation Session", category: "wellness", time: "08:30 AM", cost: 50 },
+                { title: "Exclusive Vintage Wine Cellar Tasting", category: "meals", time: "08:00 PM", cost: 125 }
+            ],
+            cultural: [
+                { title: "Traditional Heritage Ceremonial Arts Session", category: "cultural", time: "10:30 AM", cost: 95 },
+                { title: "Curated Direct Access Art Exhibition", category: "cultural", time: "02:00 PM", cost: 70 },
+                { title: "Specialist Historical Walk Guided Route", category: "cultural", time: "04:30 PM", cost: 55 },
+                { title: "Imperial Opera VIP Box Seating Ticket", category: "cultural", time: "07:30 PM", cost: 175 }
+            ],
+            culinary: [
+                { title: "Awarded Michelin-Star Tasting Dinner", category: "meals", time: "07:30 PM", cost: 240 },
+                { title: "Celebrated Pastry Chef Cooking Lesson", category: "meals", time: "11:00 AM", cost: 130 },
+                { title: "Artisanal Open-Market Culinary Tour Guide", category: "meals", time: "03:30 PM", cost: 65 },
+                { title: "Prestige Grand Cru Sommelier Masterclass", category: "meals", time: "05:30 PM", cost: 155 }
+            ],
+            wellness: [
+                { title: "Dawn Sea Cliff private yoga meditation", category: "wellness", time: "06:30 AM", cost: 60 },
+                { title: "Tibetan Crystal Singing Bowl therapy session", category: "wellness", time: "11:30 AM", cost: 80 },
+                { title: "Holistic Organic Nutrition Chef Menu", category: "meals", time: "01:30 PM", cost: 110 },
+                { title: "Geothermal Mineral Oasis Pool Access", category: "wellness", time: "04:00 PM", cost: 130 }
+            ]
+        };
+
+        const TEMPLATE_HIGHLIGHT_RECORDS = [
+            "Scenic Arrival & Acclimatization Route",
+            "Bespoke Cultural Integration & Arts",
+            "Hidden Trails & Premium Local Vistas",
+            "Private Culinary Heritage Excursions",
+            "Sunset Bay Luxury Yacht Charters",
+            "Artisan Community Direct Encounters",
+            "Geothermal Spring Thermal Restoration",
+            "Jagged Wilderness Private Flights",
+            "Exclusive Skyline Views & Helipad Transfers",
+            "Leisurely Coastal Wander & Estate Rest"
+        ];
+
+        const PROMO_CODES = [
+            { code: "SKYVERA20", title: "Global Nomad Promo", desc: "Get an additional $200 off packages over 5 days.", amt: 200 },
+            { code: "FAMILYPACK", title: "Middle-Class Saver", desc: "Save $250 for family groups of 3 or more members.", amt: 250 },
+            { code: "SKYVEESCAPE", title: "Micro-Escape Special", desc: "Save $50 on any quick 1 to 3 day holiday package.", amt: 50 }
+        ];
+
+        createApp({
+            setup() {
+                const activeTab = ref('catalog');
+                const toastMessage = ref(null);
+
+                // Simulation Account Balance
+                const userWalletBalance = ref(15000); // starts with $15,000
+
+                // Packages Lists Databases
+                const packages = ref(PACKAGES_DATABASE);
+                const ACTIVE_PROMOS = ref(PROMO_CODES);
+
+                // Advertisements State variables
+                const currentAdIndex = ref(0);
+                const selectedCampaignVibe = ref('all'); // all, premium, family
+                let rotatorTimer = null;
+
+                // Computes subset of ads based on the active brand target filter
+                const BILLBOARD_ADS = computed(() => {
+                    if (selectedCampaignVibe.value === 'all') {
+                        return ADVERTISEMENTS_DATABASE;
+                    }
+                    return ADVERTISEMENTS_DATABASE.filter(ad => ad.campaign === selectedCampaignVibe.value);
+                });
+
+                // Filters States
+                const selectedDurationFilter = ref('all'); // all, short, classic, long, month
+                const selectedTierFilter = ref('all'); // all, value, premium
+                const selectedVibeFilter = ref('all');
+                const sortOrder = ref('popular');
+
+                // Dynamic Selection controls for planner
+                const selectedPackage = ref(null);
+                const editableDuration = ref(7);
+                const travelerCount = ref(2);
+                const hotelTier = ref('standard');
+                const itineraryDays = ref([]);
+
+                // Coupon tracker
+                const claimedOffers = ref([]); // coupons claimed by the user
+                const appliedCouponCode = ref('');
+
+                // User active booked trips
+                const myBookings = ref([
+                    {
+                        id: 'BOOK-4290',
+                        packageTitle: 'Parisian Art, Heritage & Pastry Escapes',
+                        region: 'Paris',
+                        country: 'France',
+                        startDate: '2026-08-12',
+                        duration: 3,
+                        travelers: 2,
+                        cost: 1618,
+                        promoApplied: 'SKYVEESCAPE',
+                        daySummaryExcerpt: "Day 1: Curated Museum guides • Day 2: Private Pastry Baking Lesson • Day 3: Champagne Dinner cruises on the Seine."
+                    }
+                ]);
+
+                // Filter duration range definition labels
+                const durationFilters = {
+                    all: 'all',
+                    short: '1-3 d',
+                    classic: '4-9 d',
+                    long: '10-20 d',
+                    month: '1 mo'
+                };
+
+                // Trigger small alert notification
+                const triggerToast = (msg) => {
+                    toastMessage.value = msg;
+                    setTimeout(() => {
+                        toastMessage.value = null;
+                    }, 3500);
+                };
+
+                // Start Advertisement auto-rotation
+                const startAdRotation = () => {
+                    stopAdRotation();
+                    rotatorTimer = setInterval(() => {
+                        nextAdSlide();
+                    }, 7000); // changes ad every 7 seconds
+                };
+
+                const stopAdRotation = () => {
+                    if (rotatorTimer) {
+                        clearInterval(rotatorTimer);
+                    }
+                };
+
+                const nextAdSlide = () => {
+                    if (BILLBOARD_ADS.value.length === 0) return;
+                    currentAdIndex.value = (currentAdIndex.value + 1) % BILLBOARD_ADS.value.length;
+                };
+
+                const prevAdSlide = () => {
+                    if (BILLBOARD_ADS.value.length === 0) return;
+                    currentAdIndex.value = (currentAdIndex.value - 1 + BILLBOARD_ADS.value.length) % BILLBOARD_ADS.value.length;
+                };
+
+                const setAdSlide = (index) => {
+                    currentAdIndex.value = index;
+                    startAdRotation(); // reset timer on manual selection
+                };
+
+                // Filter target vibe dynamically
+                const setCampaignVibeFilter = (vibe) => {
+                    selectedCampaignVibe.value = vibe;
+                    currentAdIndex.value = 0; // reset active slider index
+                    triggerToast(`Displaying ${vibe === 'all' ? 'all visual ads' : vibe + ' targeted marketing ads'}!`);
+                };
+
+                // Load an advertisement target package directly into planner
+                const loadAdCampaignTarget = (packageId) => {
+                    const matched = packages.value.find(p => p.id === packageId);
+                    if (matched) {
+                        selectPackageForPlanning(matched);
+                    } else {
+                        triggerToast("Target package not found. Loading catalog instead.");
+                    }
+                };
+
+                // Filtering computations logic
+                const filteredPackages = computed(() => {
+                    let temp = [...packages.value];
+
+                    // Brand Vibe Campaign filter override (if selected from interactive toggles)
+                    if (selectedCampaignVibe.value !== 'all') {
+                        const tierMap = selectedCampaignVibe.value === 'premium' ? 'premium' : 'value';
+                        temp = temp.filter(p => p.tier === tierMap);
+                    }
+
+                    // Duration Filter
+                    if (selectedDurationFilter.value !== 'all') {
+                        if (selectedDurationFilter.value === 'short') {
+                            temp = temp.filter(p => p.durationDays <= 3);
+                        } else if (selectedDurationFilter.value === 'classic') {
+                            temp = temp.filter(p => p.durationDays >= 4 && p.durationDays <= 9);
+                        } else if (selectedDurationFilter.value === 'long') {
+                            temp = temp.filter(p => p.durationDays >= 10 && p.durationDays <= 20);
+                        } else if (selectedDurationFilter.value === 'month') {
+                            temp = temp.filter(p => p.durationDays >= 21);
+                        }
+                    }
+
+                    // Class Tier Filter (Value vs Premium)
+                    if (selectedTierFilter.value !== 'all') {
+                        temp = temp.filter(p => p.tier === selectedTierFilter.value);
+                    }
+
+                    // Vibe Filter
+                    if (selectedVibeFilter.value !== 'all') {
+                        temp = temp.filter(p => p.vibe === selectedVibeFilter.value);
+                    }
+
+                    // Sorting Order
+                    if (sortOrder.value === 'price-low') {
+                        temp.sort((a, b) => calculatePromoCost(a) - calculatePromoCost(b));
+                    } else if (sortOrder.value === 'price-high') {
+                        temp.sort((a, b) => calculatePromoCost(b) - calculatePromoCost(a));
+                    } else if (sortOrder.value === 'duration-desc') {
+                        temp.sort((a, b) => b.durationDays - a.durationDays);
+                    }
+
+                    return temp;
+                });
+
+                // Calculate standard promo base rate
+                const calculatePromoCost = (pkg) => {
+                    const discountRatio = (100 - pkg.dealDiscount) / 100;
+                    return Math.round(pkg.baseRegularCost * discountRatio);
+                };
+
+                // Apply dynamic coupons
+                const claimOfferCode = (offer) => {
+                    if (claimedOffers.value.includes(offer.code)) {
+                        triggerToast("You already claimed this coupon offer.");
+                        return;
+                    }
+                    claimedOffers.value.push(offer.code);
+                    appliedCouponCode.value = offer.code; // set as active
+                    triggerToast(`Promo claimed! Coupon "${offer.code}" was successfully added.`);
+                };
+
+                // Select a package and auto-build detailed days timeline
+                const selectPackageForPlanning = (pkg) => {
+                    selectedPackage.value = pkg;
+                    editableDuration.value = pkg.durationDays;
+                    generateDaysTimeline(pkg.durationDays);
+                    
+                    // Set recommended budget options by default
+                    if (pkg.tier === 'value') {
+                        hotelTier.value = 'budget';
+                    } else {
+                        hotelTier.value = 'standard';
+                    }
+                    
+                    activeTab.value = 'planner';
+                    triggerToast(`Loaded "${pkg.title}" into custom interactive timeline!`);
+                };
+
+                // Build timeline dynamically [1 day to 30 days]
+                const generateDaysTimeline = (totalDays) => {
+                    const temp = [];
+                    const activityPool = SUGGESTED_DAILY_MILESTONES[selectedPackage.value.category] || SUGGESTED_DAILY_MILESTONES.adventure;
+
+                    for (let i = 0; i < totalDays; i++) {
+                        const dayNum = i + 1;
+                        const highlightLabel = TEMPLATE_HIGHLIGHT_RECORDS[i % TEMPLATE_HIGHLIGHT_RECORDS.length];
+                        
+                        // Pick corresponding activities from pool
+                        const act1 = activityPool[i % activityPool.length];
+                        const act2 = activityPool[(i + 2) % activityPool.length];
+
+                        const dayActivities = [
+                            {
+                                title: act1.title,
+                                category: act1.category || 'adventure',
+                                time: act1.time || '10:00 AM',
+                                cost: Math.floor(act1.cost * 0.9)
+                            }
+                        ];
+
+                        // Even days get additional tours, snacks, or flights
+                        if (dayNum % 2 === 0) {
+                            dayActivities.push({
+                                title: act2.title,
+                                category: act2.category || 'meals',
+                                time: act2.time || '04:00 PM',
+                                cost: Math.floor(act2.cost * 0.9)
+                            });
+                        }
+
+                        // Evening comfortable/premium stay
+                        dayActivities.push({
+                            title: selectedPackage.value.tier === 'value' ? 'Comfortable Family Lodge overnight' : 'Premium stay booking',
+                            category: "lodging",
+                            time: "08:30 PM",
+                            cost: selectedPackage.value.tier === 'value' ? 90 : 160
+                        });
+
+                        temp.push({
+                            title: `Exploring local regional paths`,
+                            highlight: highlightLabel,
+                            activities: dayActivities,
+                            isExpanded: i === 0, // expand first day automatically
+                            newActivityTitle: '',
+                            newActivityCategory: 'adventure',
+                            newActivityCost: 80
+                        });
+                    }
+
+                    itineraryDays.value = temp;
+                };
+
+                // Expand or collapse timeline days
+                const toggleAllTimelineDays = (bool) => {
+                    itineraryDays.value.forEach(day => {
+                        day.isExpanded = bool;
+                    });
+                };
+
+                // Handle changes of the duration slider
+                const handleDurationChange = () => {
+                    let clamped = Math.min(30, Math.max(1, editableDuration.value));
+                    editableDuration.value = clamped;
+                    generateDaysTimeline(clamped);
+                };
+
+                // Remove milestone activity
+                const deleteActivity = (dayIndex, actIndex) => {
+                    itineraryDays.value[dayIndex].activities.splice(actIndex, 1);
+                    triggerToast("Milestone activity removed from dynamic day.");
+                };
+
+                // Add custom user activity to timeline day
+                const addCustomActivityToDay = (dayIdx) => {
+                    const dayObj = itineraryDays.value[dayIdx];
+                    if (!dayObj.newActivityTitle.trim()) {
+                        triggerToast("Please provide a custom name for this activity.");
+                        return;
+                    }
+
+                    dayObj.activities.push({
+                        title: dayObj.newActivityTitle.trim(),
+                        category: dayObj.newActivityCategory,
+                        time: "Suggested Afternoon Slot",
+                        cost: Number(dayObj.newActivityCost) || 50
+                    });
+
+                    // Reset internal state
+                    dayObj.newActivityTitle = '';
+                    dayObj.newActivityCost = 80;
+                    triggerToast(`Custom milestone successfully added to Day ${dayIdx + 1}!`);
+                };
+
+                // Helper to return icon class
+                const getActivityIcon = (category) => {
+                    switch (category) {
+                        case 'transit': return 'fa-solid fa-plane-up';
+                        case 'lodging': return 'fa-solid fa-hotel';
+                        case 'meals': return 'fa-solid fa-utensils';
+                        case 'adventure': return 'fa-solid fa-compass';
+                        case 'wellness': return 'fa-solid fa-spa';
+                        default: return 'fa-solid fa-route';
+                    }
+                };
+
+                // Compute day subtotal
+                const calculateDayCost = (day) => {
+                    let costSum = day.activities.reduce((sum, act) => sum + (act.cost || 0), 0);
+                    return costSum * travelerCount.value;
+                };
+
+                // Financial computations for dynamic estimates
+                const baseUnformattedCost = computed(() => {
+                    let total = 0;
+                    itineraryDays.value.forEach(day => {
+                        total += day.activities.reduce((sum, act) => sum + (act.cost || 0), 0);
+                    });
+                    return total * travelerCount.value;
+                });
+
+                const packageDiscountAmt = computed(() => {
+                    if (!selectedPackage.value) return 0;
+                    return Math.round(baseUnformattedCost.value * (selectedPackage.value.dealDiscount / 100));
+                });
+
+                const couponDiscountAmt = computed(() => {
+                    if (!appliedCouponCode.value) return 0;
+                    const matchedCoupon = ACTIVE_PROMOS.value.find(c => c.code === appliedCouponCode.value.toUpperCase());
+                    if (!matchedCoupon) return 0;
+
+                    // Apply coupon rule conditions
+                    if (matchedCoupon.code === 'SKYVERA20' && editableDuration.value < 5) return 0;
+                    if (matchedCoupon.code === 'FAMILYPACK' && travelerCount.value < 3) return 0;
+
+                    return matchedCoupon.amt;
+                });
+
+                const totalCalculatedEstimate = computed(() => {
+                    let base = baseUnformattedCost.value;
+                    let hotelUpgrade = hotelTier.value === 'luxury' ? (150 * editableDuration.value * travelerCount.value) : 
+                                       hotelTier.value === 'budget' ? (-60 * editableDuration.value * travelerCount.value) : 0;
+                    let discounted = base + hotelUpgrade - packageDiscountAmt.value - couponDiscountAmt.value;
+                    return Math.max(100, discounted); // Minimum floor price
+                });
+
+                // Suitcase Packing Logic calculated dynamically
+                const dynamicPackingList = computed(() => {
+                    const days = editableDuration.value;
+                    const items = [
+                        { name: "Valid Passports & Visa Copies", qty: travelerCount.value, checked: false },
+                        { name: "Everyday Travel Clothes Sets", qty: Math.min(15, days + 2), checked: false },
+                        { name: "Tech Accessories & Chargers Kit", qty: 1, checked: false },
+                        { name: "Comfy Trail Sneakers", qty: travelerCount.value, checked: false },
+                        { name: "Refillable Insulated Drinking Bottle", qty: travelerCount.value, checked: false }
+                    ];
+
+                    // Adventure-specific packing
+                    if (selectedPackage.value && selectedPackage.value.category === 'adventure') {
+                        items.push({ name: "Unbreakable UV Protection Glasses", qty: travelerCount.value, checked: false });
+                        items.push({ name: "Waterproof outer shell jacket", qty: travelerCount.value, checked: false });
+                    }
+
+                    // Hot weather/beach packing
+                    if (selectedPackage.value && selectedPackage.value.id === 'PKG-AMA') {
+                        items.push({ name: "Premium Linen Outfits", qty: Math.min(6, days), checked: false });
+                        items.push({ name: "High SPF Skin Sunscreen Lotion", qty: 2, checked: false });
+                    }
+
+                    // Long month expeditions
+                    if (days >= 20) {
+                        items.push({ name: "Compact travel washing detergent", qty: 3, checked: false });
+                        items.push({ name: "Mini medical first aid emergency kit", qty: 1, checked: false });
+                    }
+
+                    return items;
+                });
+
+                // Complete Dynamic Sandbox Checkout
+                const bookHolidayPlan = () => {
+                    if (totalCalculatedEstimate.value > userWalletBalance.value) {
+                        triggerToast("Insufficient virtual balance to checkout this trip package.");
+                        return;
+                    }
+
+                    // Compile daily summaries for voucher review
+                    const summaryLine = itineraryDays.value.map((d, i) => {
+                        const topActivities = d.activities.slice(0, 2).map(a => a.title).join(', ');
+                        return `Day ${i + 1}: ${topActivities || 'Relaxation Day'}`;
+                    }).join(' • ');
+
+                    const newBooking = {
+                        id: `SKY-${Math.floor(1000 + Math.random() * 9000)}`,
+                        packageTitle: selectedPackage.value.title,
+                        region: selectedPackage.value.region,
+                        country: selectedPackage.value.country,
+                        startDate: '2026-09-24', // Default proposed start
+                        duration: editableDuration.value,
+                        travelers: travelerCount.value,
+                        cost: totalCalculatedEstimate.value,
+                        promoApplied: appliedCouponCode.value || 'None applied',
+                        daySummaryExcerpt: summaryLine
+                    };
+
+                    // Deduct wallet balance
+                    userWalletBalance.value -= totalCalculatedEstimate.value;
+
+                    // Add to active trips list
+                    myBookings.value.unshift(newBooking);
+
+                    // Reset variables
+                    selectedPackage.value = null;
+                    appliedCouponCode.value = '';
+
+                    activeTab.value = 'bookings';
+                    triggerToast("Booking verified! Virtual balance deducted. Boarding pass generated.");
+                };
+
+                // Cancel and Refund Sandbox booking
+                const refundBookingPlan = (booking) => {
+                    myBookings.value = myBookings.value.filter(b => b.id !== booking.id);
+                    // Return funds to virtual wallet
+                    userWalletBalance.value += booking.cost;
+                    triggerToast(`Trip registration cancelled. $${booking.cost.toLocaleString()} returned to Skyvera wallet.`);
+                };
+
+                // Copy digital summary data to clipboard
+                const copyBookingVoucher = (booking) => {
+                    const text = `SKYVERA OFFICIAL DIGITAL HOLIDAY VOUCHER\n==========================================\nBooking Ref: ${booking.id}\nPackage Title: ${booking.packageTitle}\nRegion: ${booking.region}, ${booking.country}\nTrip Duration: ${booking.duration} Days\nPassengers: ${booking.travelers}\nPromo Coupon: ${booking.promoApplied}\nTotal Price Paid: $${booking.cost}\nItinerary Highlights: ${booking.daySummaryExcerpt}\n==========================================`;
+                    
+                    const el = document.createElement('textarea');
+                    el.value = text;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+
+                    triggerToast("Voucher and route mapping copied to clipboard!");
+                };
+
+                const resetToCatalog = () => {
+                    selectedPackage.value = null;
+                    activeTab.value = 'catalog';
+                };
+
+                onMounted(() => {
+                    startAdRotation();
+                });
+
+                onBeforeUnmount(() => {
+                    stopAdRotation();
+                });
+
+                return {
+                    activeTab,
+                    toastMessage,
+                    userWalletBalance,
+                    packages,
+                    ACTIVE_PROMOS,
+                    currentAdIndex,
+                    selectedCampaignVibe,
+                    BILLBOARD_ADS,
+                    selectedDurationFilter,
+                    selectedTierFilter,
+                    selectedVibeFilter,
+                    sortOrder,
+                    selectedPackage,
+                    editableDuration,
+                    travelerCount,
+                    hotelTier,
+                    itineraryDays,
+                    claimedOffers,
+                    appliedCouponCode,
+                    myBookings,
+                    durationFilters,
+                    filteredPackages,
+                    calculatePromoCost,
+                    claimOfferCode,
+                    selectPackageForPlanning,
+                    toggleAllTimelineDays,
+                    handleDurationChange,
+                    deleteActivity,
+                    addCustomActivityToDay,
+                    getActivityIcon,
+                    calculateDayCost,
+                    baseUnformattedCost,
+                    packageDiscountAmt,
+                    couponDiscountAmt,
+                    totalCalculatedEstimate,
+                    dynamicPackingList,
+                    bookHolidayPlan,
+                    refundBookingPlan,
+                    copyBookingVoucher,
+                    resetToCatalog,
+                    prevAdSlide,
+                    nextAdSlide,
+                    setAdSlide,
+                    setCampaignVibeFilter,
+                    loadAdCampaignTarget
+                };
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
